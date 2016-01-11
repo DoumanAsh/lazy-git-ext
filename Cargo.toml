@@ -1,0 +1,39 @@
+[package]
+name = "lazy-git-ext"
+version = "1.0.0"
+authors = ["Douman <douman@gmx.se>"]
+license = "MIT"
+keywords = ["git"]
+repository = "https://github.com/DoumanAsh/lazy-git-ext"
+
+[lib]
+name = "utils"
+path = "src/common.rs"
+
+[[bin]]
+name = "git-ladd"
+path = "src/add.rs"
+
+[[bin]]
+name = "git-lclean"
+path = "src/clean.rs"
+
+[[bin]]
+name = "git-lamend"
+path = "src/amend.rs"
+
+[[bin]]
+name = "git-lpush"
+path = "src/push.rs"
+
+[[bin]]
+name = "git-lcommit"
+path = "src/commit.rs"
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
