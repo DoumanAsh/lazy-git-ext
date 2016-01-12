@@ -2,7 +2,7 @@
 extern crate utils;
 
 fn main() {
-    if utils::cmd_args().skip(2).len() == 0 {
+    if utils::cmd_args().skip(1).len() == 0 {
         println!("Empty commit message!");
     }
     else {
