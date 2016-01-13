@@ -6,7 +6,7 @@ fn main() {
         println!("Empty commit message!");
     }
     else {
-        let args: Vec<String> = utils::cmd_args().skip(2).collect();
+        let args: Vec<String> = utils::cmd_args().skip(1).collect();
         let mut args_split = args.split(|elem| elem.to_lowercase() == "--subj");
 
         //If no --subj split will have only one element.
