@@ -1,6 +1,6 @@
 [package]
 name = "lazy-git-ext"
-version = "1.0.2"
+version = "1.1.0"
 authors = ["Douman <douman@gmx.se>"]
 license = "MIT"
 keywords = ["git"]
@@ -29,6 +29,10 @@ path = "src/push.rs"
 [[bin]]
 name = "git-lcommit"
 path = "src/commit.rs"
+
+[[bin]]
+name = "git-sync"
+path = "src/sync.rs"
 
 [profile.release]
 opt-level = 3
