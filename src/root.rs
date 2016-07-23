@@ -1,10 +1,8 @@
 extern crate lazy_git_ext;
 
-use lazy_git_ext::LazyGit;
+const USAGE: &'static str = "usage: root [options]
 
-const USAGE: &'static str = "usage: add-all [options]
-
-Add all changes to index.
+Prints root directory of repository.
 
 Options:
 -h/--help    - Prints help.
@@ -24,5 +22,8 @@ fn main() {
         }
     }
 
-    lazy_git_ext::open_repo(".").add_all().expect("Cannot add to repository");
+    let repo = lazy_git_ext::open_repo(".");
+    let path = repo.workdir().unwrap();
+
+    println!("{}", path.display());
 }

@@ -1,38 +1,29 @@
 [package]
 name = "lazy-git-ext"
-version = "1.1.0"
+version = "2.0.0"
 authors = ["Douman <douman@gmx.se>"]
 license = "MIT"
 keywords = ["git"]
 repository = "https://github.com/DoumanAsh/lazy-git-ext"
 
-[lib]
-name = "utils"
-path = "src/common.rs"
+[[bin]]
+name = "git-lazy"
+path = "src/lazy.rs"
 
 [[bin]]
-name = "git-ladd"
-path = "src/add.rs"
+name = "git-root"
+path = "src/root.rs"
 
 [[bin]]
-name = "git-lclean"
+name = "git-clean-all"
 path = "src/clean.rs"
 
 [[bin]]
-name = "git-lamend"
-path = "src/amend.rs"
+name = "git-add-all"
+path = "src/add.rs"
 
-[[bin]]
-name = "git-lpush"
-path = "src/push.rs"
-
-[[bin]]
-name = "git-lcommit"
-path = "src/commit.rs"
-
-[[bin]]
-name = "git-sync"
-path = "src/sync.rs"
+[dependencies]
+git2 = "^0.4"
 
 [profile.release]
 opt-level = 3
