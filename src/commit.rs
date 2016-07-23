@@ -9,7 +9,7 @@ Title is the first line of the commit's message.
 Description is separated from the title by empty line.
 
 Options:
--a/-all      - Adds all changes and untracked files before to commit.
+-a/--all     - Adds all changes and untracked files before to commit.
 -h/--help    - Prints help.
 ";
 
@@ -57,6 +57,11 @@ fn main() {
 
     if is_add {
         repo.add_all().expect("Cannot add changes");
+    }
+
+    if !repo.is_to_commit() {
+        println!("No changes are added to commit");
+        return;
     }
 
     let tree = repo.write_tree().expect("Failed to retrieve tree to commit");
