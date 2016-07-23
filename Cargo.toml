@@ -11,7 +11,7 @@ name = "git-lazy"
 path = "src/lazy.rs"
 
 [[bin]]
-name = "git-commit"
+name = "git-lcommit"
 path = "src/commit.rs"
 
 [[bin]]

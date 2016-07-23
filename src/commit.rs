@@ -50,10 +50,7 @@ fn main() {
         return;
     }
 
-    let commit_msg = commit_msg.unwrap();
-
     let repo = lazy_git_ext::open_repo(".");
-    let signature = repo.signature().expect("Cannot find signature");
 
     if is_add {
         repo.add_all().expect("Cannot add changes");
@@ -64,11 +61,7 @@ fn main() {
         return;
     }
 
-    let tree = repo.write_tree().expect("Failed to retrieve tree to commit");
+    let commit_msg = commit_msg.unwrap();
 
-    let head = repo.head().expect("Cannot retrieve head");
-    let head_oid = head.target().expect("HEAD does not point to a direct commit");
-    let head_commit = repo.find_commit(head_oid).expect("Cannot retrieve HEAD's commit");
-
-    repo.commit(Some("HEAD"), &signature, &signature, &commit_msg, &tree, &[&head_commit]).expect("Failed to commit");
+    repo.commit_to_head(&commit_msg).expect("Failed to commit");
 }
