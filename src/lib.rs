@@ -65,12 +65,23 @@ pub trait LazyGit {
     ///
     /// * msg - Commit's message.
     fn amend_to_head(&self) -> Result<git2::Oid, git2::Error>;
+
     /// Adds commit to current HEAD.
     ///
     /// Params:
     ///
     /// * msg - Commit's message.
     fn commit_to_head(&self, msg: &str) -> Result<git2::Oid, git2::Error>;
+
+    /// Fetchs changes from remote.
+    ///
+    /// Params:
+    ///
+    /// * name - Remote's name.
+    /// * opts - Fetch's options. See `git2::FetchOptions`.
+    fn fetch_remote(&self, name: &str) -> Result<(), git2::Error>;
+
+    fn get_creditals(&self, url: &str, username: Option<&str>, allowed: git2::CredentialType) -> Result<git2::Cred, git2::Error>;
 }
 
 impl LazyGit for Repository {
@@ -169,5 +180,75 @@ impl LazyGit for Repository {
         let head_commit = try!(self.find_commit(head_oid));
 
         self.commit(Some("HEAD"), &signature, &signature, &msg, &tree, &[&head_commit])
+    }
+
+    fn get_creditals(&self, url: &str, username: Option<&str>, allowed: git2::CredentialType) -> Result<git2::Cred, git2::Error> {
+        let cfg = try!(self.config());
+
+        let mut cred_helper = git2::CredentialHelper::new(url);
+        cred_helper.config(&cfg);
+
+        if allowed.contains(git2::USERNAME) {
+            return git2::Cred::username(username.unwrap_or("git"));
+        }
+
+        if allowed.contains(git2::DEFAULT) {
+            return git2::Cred::default();
+        }
+
+        if allowed.contains(git2::SSH_KEY) {
+            let name = username.map(|s| s.to_string())
+                               .or_else(|| cred_helper.username.clone())
+                               .or_else(|| std::env::var("USER").ok())
+                               .or_else(|| std::env::var("USERNAME").ok())
+                               .or_else(|| Some("git".to_string())).unwrap();
+
+            let result = git2::Cred::ssh_key_from_agent(&name);
+
+            if result.is_ok() {
+                return result
+            }
+        }
+
+        if allowed.contains(git2::USER_PASS_PLAINTEXT) {
+            if let Ok(token) = std::env::var("GH_TOKEN") {
+                return git2::Cred::userpass_plaintext(&token, "");
+            }
+            else if let Ok(cred_helper) = git2::Cred::credential_helper(&cfg, url, username) {
+                return Ok(cred_helper);
+            }
+        }
+
+        Err(git2::Error::from_str("no authentication available"))
+    }
+
+    fn fetch_remote(&self, name: &str) -> Result<(), git2::Error> {
+        let mut remote = try!(self.find_remote(name).or_else(|_| {
+            self.remote_anonymous(name)
+        }));
+
+        let mut cb = git2::RemoteCallbacks::new();
+        cb.credentials(|url, username, allowed| {
+            let ret = self.get_creditals(url, username, allowed);
+
+            if let Err(ref error) = ret {
+                println!("error: {}", error)
+            }
+
+            ret
+        });
+        let mut opts = git2::FetchOptions::new();
+        opts.remote_callbacks(cb)
+            .download_tags(git2::AutotagOption::All);
+
+        try!(remote.connect(git2::Direction::Fetch));
+
+        try!(remote.download(&[], Some(&mut opts)));
+
+        remote.disconnect();
+
+        try!(remote.update_tips(None, true, git2::AutotagOption::All, None));
+
+        Ok(())
     }
 }
