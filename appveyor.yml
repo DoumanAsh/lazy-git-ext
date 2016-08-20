@@ -1,0 +1,88 @@
+branches:
+  only:
+    - master
+
+environment:
+  git_token:
+    secure: H5PQSeh6rHOoDLktlYlVLYu/iJMTwzzNVk8Wr//nqbYC7xrJuGDwKwiev/0Bl2d3
+  global:
+    PROJECT_NAME: lazy-git-ext
+  matrix:
+    # Stable channel only?
+    - TARGET: i686-pc-windows-gnu
+      CHANNEL: stable
+    - TARGET: x86_64-pc-windows-gnu
+      CHANNEL: stable
+
+matrix:
+  fast_finish: true
+
+# Install Rust and Cargo
+# (Based on from https://github.com/rust-lang/libc/blob/master/appveyor.yml)
+install:
+  - ps: Start-FileDownload "https://static.rust-lang.org/dist/channel-rust-stable"
+  - ps: $env:RUST_VERSION = Get-Content channel-rust-stable | select -first 1 | %{$_.split('-')[1]}
+  - if NOT "%CHANNEL%" == "stable" set RUST_VERSION=%CHANNEL%
+  - ps: Start-FileDownload "https://static.rust-lang.org/dist/rust-${env:RUST_VERSION}-${env:TARGET}.exe"
+  - rust-%RUST_VERSION%-%TARGET%.exe /VERYSILENT /NORESTART /DIR="C:\Program Files (x86)\Rust"
+  - SET PATH=%PATH%;C:\Program Files (x86)\Rust\bin
+  - if "%TARGET%" == "i686-pc-windows-gnu" set PATH=%PATH%;C:\msys64\mingw32\bin
+  - if "%TARGET%" == "x86_64-pc-windows-gnu" set PATH=%PATH%;C:\msys64\mingw64\bin
+  - rustc -V
+  - cargo -V
+
+build: false
+
+test_script:
+  - cargo build
+
+after_test:
+  # Generate artifacts for release if needed
+  - ps: |
+      if ($env:APPVEYOR_REPO_TAG -eq "true") {
+          echo "Generate artifact for tag($env:APPVEYOR_REPO_TAG_NAME)"
+          cargo build --release -q 2> $null
+          mkdir staging
+          cp target\release\*.exe staging
+          cd staging
+          7z a "../$env:PROJECT_NAME-$env:TARGET.zip" * > $null
+          Push-AppveyorArtifact "../$env:PROJECT_NAME-$env:TARGET.zip"
+      }
+      elseif ([string]::IsNullOrEmpty($env:APPVEYOR_PULL_REQUEST_NUMBER)) {
+          # Non-tag build. Check if we need to publish new crate version
+          $version = Select-String -Path Cargo.toml -pattern  '\d{1,3}.\d{1,3}.\d{1,3}' | Select-Object -First 1
+          $version = $version.Line.split('=')[1].trim()
+          $version = $version.substring(1, $version.Length-2)
+          echo "Build crate version($version)"
+
+          git tag -a $version -m "$version" 2> $null
+
+          if ($LASTEXITCODE -eq 0) {
+              echo "Publish new crate version"
+              # Use AppVeyor API to set variables properly within one build job
+              Set-AppveyorBuildVariable -Name "APPVEYOR_REPO_TAG_NAME" -Value $version
+              Set-AppveyorBuildVariable -Name "APPVEYOR_REPO_TAG" -Value "true"
+          }
+          else {
+              echo "New version publish is not required"
+          }
+      }
+      else {
+          echo "Skip deploy on PR"
+      }
+
+#Since AppVeyor is pretty stupid we deploy empty release first.
+#This triggers normal tag push so the second build will actually deploy stuff
+deploy:
+  # Release should be the same as tag's trigger. Otherwise you'll create new tag
+  tag: "$(APPVEYOR_REPO_TAG_NAME)"
+  release: "$(APPVEYOR_REPO_TAG_NAME)"
+  description: "Lazy git extensions"
+  # All the zipped artifacts will be deployed
+  artifact: /.*\.zip/
+  auth_token: "$(git_token)"
+  provider: GitHub
+  on:
+    CHANNEL: stable
+    appveyor_repo_tag: true
+
