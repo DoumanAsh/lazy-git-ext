@@ -1,0 +1,42 @@
+language: rust
+
+sudo: required
+dist: trusty
+
+addons:
+  apt:
+    sources:
+      - kalakris-cmake
+    packages:
+      - cmake
+      - libcurl4-openssl-dev
+      - libelf-dev
+      - libdw-dev
+
+matrix:
+  include:
+    # Let's leave cross-compilation for future.
+    - env: TARGET=x86_64-unknown-linux-gnu
+
+install:
+  - if [[ $TARGET != "x86_64-unknown-linux-gnu" ]]; then export PATH="$HOME/.cargo/bin:$PATH" && curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=stable && rustup target add $TARGET; fi
+  - rustc -V
+  - cargo -V
+
+script:
+  - cargo build --target $TARGET
+
+before_deploy:
+    - cargo build --release --target $TARGET
+    - zip "lazy-git-ext-$TARGET-debug.zip" -j `grep  -m 1 "^"  target/$TARGET/debug/* -s | grep Binary | awk '{print $3}' | grep -v "rlib"`
+    - zip "lazy-git-ext-$TARGET.zip" -j `grep  -m 1 "^"  target/$TARGET/release/* -s | grep Binary | awk '{print $3}' | grep -v "rlib"`
+
+deploy:
+  provider: releases
+  api_key: $GIT_TOKEN
+  file:
+      - "lazy-git-ext-$TARGET.zip"
+      - "lazy-git-ext-$TARGET-debug.zip"
+  skip_cleanup: true
+  on:
+    tags: true

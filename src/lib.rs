@@ -4,8 +4,8 @@ pub use git2::Repository;
 
 #[inline(always)]
 /// Opens repository.
-pub fn open_repo(path: &str) -> Repository {
-    Repository::discover(path).expect("Not a git repository")
+pub fn open_repo(path: &str) -> Option<Repository> {
+    Repository::discover(path).ok()
 }
 
 fn remove<P: AsRef<std::path::Path>>(path: P) -> std::io::Result<()> {

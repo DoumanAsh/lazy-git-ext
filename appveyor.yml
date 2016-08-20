@@ -46,7 +46,16 @@ after_test:
           cp target\release\*.exe staging
           cd staging
           7z a "../$env:PROJECT_NAME-$env:TARGET.zip" * > $null
-          Push-AppveyorArtifact "../$env:PROJECT_NAME-$env:TARGET.zip"
+          cd ../
+          Push-AppveyorArtifact "$env:PROJECT_NAME-$env:TARGET.zip"
+
+          mkdir staging\debug
+          cargo build -q 2> $null
+          cp target\debug\*.exe staging\debug
+          cd staging\debug
+          7z a "../../$env:PROJECT_NAME-$env:TARGET-debug.zip" * > $null
+          cd ../../
+          Push-AppveyorArtifact "$env:PROJECT_NAME-$env:TARGET-debug.zip"
       }
       elseif ([string]::IsNullOrEmpty($env:APPVEYOR_PULL_REQUEST_NUMBER)) {
           # Non-tag build. Check if we need to publish new crate version
@@ -77,7 +86,7 @@ deploy:
   # Release should be the same as tag's trigger. Otherwise you'll create new tag
   tag: "$(APPVEYOR_REPO_TAG_NAME)"
   release: "$(APPVEYOR_REPO_TAG_NAME)"
-  description: "Debug build"
+  description: "See `git lazy` for list of git addons."
   # All the zipped artifacts will be deployed
   artifact: /.*\.zip/
   auth_token: "$(git_token)"

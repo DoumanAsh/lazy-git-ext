@@ -30,6 +30,13 @@ fn main() {
 
     let repo = lazy_git_ext::open_repo(".");
 
+    if repo.is_none() {
+        println!("Not a git repository (or any of the parent directories)");
+        return;
+    }
+
+    let repo = repo.unwrap();
+
     if is_add {
         repo.add_all().expect("Cannot add changes");
     }

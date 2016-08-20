@@ -23,6 +23,14 @@ fn main() {
     }
 
     let repo = lazy_git_ext::open_repo(".");
+
+    if repo.is_none() {
+        println!("Not a git repository (or any of the parent directories)");
+        return;
+    }
+
+    let repo = repo.unwrap();
+
     let path = repo.workdir().unwrap();
 
     println!("{}", path.display());
