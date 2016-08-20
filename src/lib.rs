@@ -59,14 +59,14 @@ pub trait LazyGit {
     /// * verbose - Whether to print removed files to stdout.
     fn clean(&self, include_ignored: bool, verbose: bool);
 
-    /// Amend changes to current HEAD.
+    /// Amend changes to the current HEAD commit.
     ///
     /// Params:
     ///
     /// * msg - Commit's message.
     fn amend_to_head(&self) -> Result<git2::Oid, git2::Error>;
 
-    /// Adds commit to current HEAD.
+    /// Creates new commit on top of HEAD.
     ///
     /// Params:
     ///
@@ -81,6 +81,7 @@ pub trait LazyGit {
     /// * opts - Fetch's options. See `git2::FetchOptions`.
     fn fetch_remote(&self, name: &str) -> Result<(), git2::Error>;
 
+    /// Retrieves creditals for git2 callback.
     fn get_creditals(&self, url: &str, username: Option<&str>, allowed: git2::CredentialType) -> Result<git2::Cred, git2::Error>;
 }
 
@@ -240,8 +241,6 @@ impl LazyGit for Repository {
         let mut opts = git2::FetchOptions::new();
         opts.remote_callbacks(cb)
             .download_tags(git2::AutotagOption::All);
-
-        try!(remote.connect(git2::Direction::Fetch));
 
         try!(remote.download(&[], Some(&mut opts)));
 

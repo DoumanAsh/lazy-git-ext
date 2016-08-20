@@ -11,12 +11,12 @@ name = "git-lazy"
 path = "src/lazy.rs"
 
 [[bin]]
-name = "git-sync"
-path = "src/fetch.rs"
-
-[[bin]]
 name = "git-lcommit"
 path = "src/commit.rs"
+
+[[bin]]
+name = "git-amend"
+path = "src/amend.rs"
 
 [[bin]]
 name = "git-root"

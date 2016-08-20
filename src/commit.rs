@@ -57,7 +57,7 @@ fn main() {
     }
 
     if !repo.is_to_commit() {
-        println!("No changes are added to commit");
+        println!("No changes to commit");
         return;
     }
 
