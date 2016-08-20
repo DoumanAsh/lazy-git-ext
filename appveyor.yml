@@ -9,9 +9,9 @@ environment:
     PROJECT_NAME: lazy-git-ext
   matrix:
     # Stable channel only?
-    - TARGET: i686-pc-windows-gnu
+    - TARGET: i686-pc-windows-msvc
       CHANNEL: stable
-    - TARGET: x86_64-pc-windows-gnu
+    - TARGET: x86_64-pc-windows-msvc
       CHANNEL: stable
 
 matrix:

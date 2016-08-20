@@ -30,6 +30,10 @@ path = "src/clean.rs"
 name = "git-add-all"
 path = "src/add.rs"
 
+[[bin]]
+name = "git-sync"
+path = "src/fetch.rs"
+
 [dependencies]
 git2 = "^0.4"
 
