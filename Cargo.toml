@@ -1,6 +1,6 @@
 [package]
 name = "lazy-git-ext"
-version = "2.0.0"
+version = "2.0.1"
 authors = ["Douman <douman@gmx.se>"]
 license = "MIT"
 keywords = ["git"]
@@ -39,7 +39,7 @@ git2 = "^0.4"
 
 [profile.release]
 opt-level = 3
-debug = false
+debug = true
 rpath = false
 lto = true
 debug-assertions = false

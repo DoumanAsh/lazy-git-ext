@@ -77,7 +77,7 @@ deploy:
   # Release should be the same as tag's trigger. Otherwise you'll create new tag
   tag: "$(APPVEYOR_REPO_TAG_NAME)"
   release: "$(APPVEYOR_REPO_TAG_NAME)"
-  description: "Lazy git extensions"
+  description: "Debug build"
   # All the zipped artifacts will be deployed
   artifact: /.*\.zip/
   auth_token: "$(git_token)"
